@@ -1,11 +1,13 @@
 package demo;
 
-import com.google.common.base.Charsets;
-import com.google.common.collect.*;
-import com.google.common.io.Files;
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.Multimap;
 import com.yubico.u2f.U2F;
 import com.yubico.u2f.data.DeviceRegistration;
-import com.yubico.u2f.data.messages.*;
+import com.yubico.u2f.data.messages.AuthenticateRequestData;
+import com.yubico.u2f.data.messages.AuthenticateResponse;
+import com.yubico.u2f.data.messages.RegisterRequestData;
+import com.yubico.u2f.data.messages.RegisterResponse;
 import com.yubico.u2f.exceptions.U2fException;
 import demo.view.AuthenticationView;
 import demo.view.RegistrationView;
@@ -13,15 +15,17 @@ import io.dropwizard.views.View;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
-import java.io.File;
-import java.net.URL;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.*;
 
 @Path("/")
 @Produces(MediaType.TEXT_HTML)
 public class Resource {
 
-    public static final String SERVER_ADDRESS = "http://example.com:8080";
+    public static final String SERVER_ADDRESS = "http://example2.com:8080";
     public static final String NAVIGATION_MENU = "<h2>Navigation</h2><ul><li><a href='registerIndex'>Register</a></li><li><a href='loginIndex'>Login</a></li></ul>.";
 
     private final Map<String, String> requestStorage = new HashMap<String, String>();
@@ -54,7 +58,9 @@ public class Resource {
     public String finishRegistration(@FormParam("tokenResponse") String response, @FormParam("username") String username)
             throws U2fException {
         RegisterResponse registerResponse = RegisterResponse.fromJson(response);
-        RegisterRequestData registerRequestData = RegisterRequestData.fromJson(requestStorage.get(registerResponse.getRequestId()));
+	    System.out.println(response);
+	    System.out.println(requestStorage.get(registerResponse.getRequestId()));
+	    RegisterRequestData registerRequestData = RegisterRequestData.fromJson(requestStorage.get(registerResponse.getRequestId()));
         DeviceRegistration registration = u2f.finishRegistration(registerRequestData, registerResponse);
         addRegistration(username, registration);
         requestStorage.remove(registerResponse.getRequestId());
@@ -85,14 +91,48 @@ public class Resource {
     @Path("loginIndex")
     @GET
     public String loginIndex() throws Exception {
-        URL index = Resource.class.getResource("loginIndex.html");
-        return Files.toString(new File(index.toURI()), Charsets.UTF_8);
+        /*URL index = Resource.class.getResource("loginIndex.html");
+        return Files.toString(new File(index.toURI()), Charsets.UTF_8);*/
+	    InputStream a = Resource.class.getResourceAsStream("loginIndex.html");
+	    return getStringFromInputStream(a);
     }
 
     @Path("registerIndex")
     @GET
     public String registerIndex() throws Exception {
-        URL defaultImage = Resource.class.getResource("registerIndex.html");
-        return Files.toString(new File(defaultImage.toURI()), Charsets.UTF_8);
+        /*URL defaultImage = Resource.class.getResource("registerIndex.html");
+	    System.out.println(defaultImage.toURI().toString());
+	    return Files.toString(new File(defaultImage.toURI()), Charsets.UTF_8);*/
+	    InputStream a = Resource.class.getResourceAsStream("registerIndex.html");
+	    return getStringFromInputStream(a);
     }
+
+	private static String getStringFromInputStream(InputStream is) {
+
+		BufferedReader br = null;
+		StringBuilder sb = new StringBuilder();
+
+		String line;
+		try {
+
+			br = new BufferedReader(new InputStreamReader(is));
+			while ((line = br.readLine()) != null) {
+				sb.append(line);
+			}
+
+		} catch (IOException e) {
+			e.printStackTrace();
+		} finally {
+			if (br != null) {
+				try {
+					br.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+
+		return sb.toString();
+
+	}
 }

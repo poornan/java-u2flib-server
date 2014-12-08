@@ -31,9 +31,10 @@ public class ClientData {
     }
 
     public ClientData(String clientData) throws U2fException {
-
-        this.rawClientData = new String(U2fB64Encoding.decode(clientData));
-        JsonElement clientDataAsElement = new JsonParser().parse(rawClientData);
+	    System.out.println(clientData);
+	    this.rawClientData = new String(U2fB64Encoding.decode(clientData));
+	    System.out.println("******"+this.rawClientData);
+	    JsonElement clientDataAsElement = new JsonParser().parse(rawClientData);
         if (!clientDataAsElement.isJsonObject()) {
             throw new U2fException("ClientData has wrong format");
         }

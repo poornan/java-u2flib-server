@@ -9,16 +9,17 @@ var request = ${data};
 setTimeout(function() {
     u2f.register(request.registerRequests, request.authenticateRequests,
     function(data) {
+        console.log(data);
         var form = document.getElementById('form');
         var reg = document.getElementById('tokenResponse');
         if(data.errorCode) {
-            alert("U2F failed with error: " + data.errorCode);
+            alert("U2F failed with error: " + data.errorMessage);
             return;
         }
         reg.value=JSON.stringify(data);
         form.submit();
     });
-}, 1000);
+}, 10000);
 </script>
 
 </head>

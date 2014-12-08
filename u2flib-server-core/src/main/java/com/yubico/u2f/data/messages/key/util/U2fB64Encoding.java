@@ -10,6 +10,7 @@ public class U2fB64Encoding {
     }
 
     public static byte[] decode(String encoded) {
-        return U2F_ENCODING.decode(encoded);
+	    System.out.println(encoded);
+	    return U2F_ENCODING.decode(encoded);
     }
 }
